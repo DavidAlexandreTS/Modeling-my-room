@@ -1,1 +1,1 @@
-# Modeling-my-room
+# Projeto da Disciplina de Computação Gráfica 2020.1
