@@ -1,5 +1,5 @@
 # Projeto da Disciplina de Computação Gráfica 2020.1
-#Informações sobre o projeto
+<h1> Informações sobre o projeto </h1>
 <br />
     Estão implementados os requisitos solicitados na Ab1 e na Ab2, que incluem modelagem de objetos obrigatórios, abertura de janela e porta usando teclado e etc.
     <br />
@@ -17,12 +17,12 @@
     <br />
     Obs: Como parte da nota da Ab2 foram adicionadas as iluminações difusa e especular como foi solicitado
 <br />
-#Dicas de como rodar
+<h1> Dicas de como rodar </h1>
 <br />
-#Linux
+<h2> Linux </h2>
 <br />
     No Linux, após instalar todas as dependências basta executar normalmente com os comandos de compilação para programas códigos com o OpenGL
     <br />
-#Windows
+<h2> Windows </h2>
 <br />
     No Windows existem várias formas, a utilizada por mim foi através do Visual Studio, existe uma série de tutoriais na internet que podem ser úteis para fazer a instalação das dependências e rodar na sua máquina
