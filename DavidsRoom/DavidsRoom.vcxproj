@@ -141,9 +141,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DavidsRoom.cpp" />
+    <ClCompile Include="draw_objects.cpp" />
+    <ClCompile Include="obj_import.cpp" />
+    <ClCompile Include="sbt_image.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="draw_objects.h" />
+    <ClInclude Include="obj_import.h" />
     <ClInclude Include="Soil.h" />
+    <ClInclude Include="stb_image.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\Downloads\vangogh.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

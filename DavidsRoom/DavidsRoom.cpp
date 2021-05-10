@@ -5,6 +5,9 @@
 #include <iostream>
 #include <fstream>
 #include "SOIL.h"
+#include "draw_objects.h"
+#include "obj_import.h"
+#include "stb_image.h"
 
 # define M_PI           3.14159265358979323846  /* pi */
 
@@ -15,8 +18,21 @@ GLint HEIGHT = 700;
 
 GLint modo = GL_MODULATE;
 
+// Luz spot da luminaria
+GLfloat luzAmbSpot[4]= {0.2,0.2,0.2,1.0};
+GLfloat posLuzSpot[4] = {  260,120,65, 1 };
+GLfloat dirLuzSpot[3] = { 0, -1,0 };
+GLfloat luzDifusaSpot[4] = { 1,1,1,1 };
+GLfloat luzEspecSpot[4] = { 0,0,0,1 };
+
+//Configuracoes de iluminacao
+float light_ambient[] = { 0.75f, 0.75f, 0.75f }; //Luz ambiente
+float light_diffuse[] = { 0.0f , 0.0f , 0.5f }; //Luz azulzinha
+float light_specular[] = { 1.0f, 0.0f, 0.0f }; // Luz branca
+
 // actual vector representing the camera's direction
 float lx = 0.0f, lz = -1.0f;
+
 // XZ position of the camera
 float x = -5.0f, z = 6.0f, y = 1.0f;
 
@@ -24,9 +40,79 @@ float angle = 0.0f;
 
 float door_angle;
 float wind_angle;
+float angle_v = 0;
 
 int flag_door = 0;
 int flag_window = 0;
+int flag_ven = 1;
+
+GLuint texture_id[20];
+
+void drawCube(GLdouble size, int* tex)
+{
+    static GLfloat n[6][3] =
+    {
+      {-1.0, 0.0, 0.0},
+      {0.0, 1.0, 0.0},
+      {1.0, 0.0, 0.0},
+      {0.0, -1.0, 0.0},
+      {0.0, 0.0, 1.0},
+      {0.0, 0.0, -1.0}
+    };
+    static GLint faces[6][4] =
+    {
+      {0, 1, 2, 3},
+      {3, 2, 6, 7},
+      {7, 6, 5, 4},
+      {4, 5, 1, 0},
+      {5, 6, 2, 1},
+      {7, 4, 0, 3}
+    };
+    GLfloat v[8][3];
+    GLint i;
+
+    v[0][0] = v[1][0] = v[2][0] = v[3][0] = -size / 2;
+    v[4][0] = v[5][0] = v[6][0] = v[7][0] = size / 2;
+    v[0][1] = v[1][1] = v[4][1] = v[5][1] = -size / 2;
+    v[2][1] = v[3][1] = v[6][1] = v[7][1] = size / 2;
+    v[0][2] = v[3][2] = v[4][2] = v[7][2] = -size / 2;
+    v[1][2] = v[2][2] = v[5][2] = v[6][2] = size / 2;
+
+    for (i = 5; i >= 0; i--)
+    {
+        if (tex[i] >= 0)
+        {
+            glBindTexture(GL_TEXTURE_2D, texture_id[tex[i]]);
+        }
+        glBegin(GL_QUADS);
+        glNormal3fv(&n[i][0]);
+        if (i == 1)
+            glTexCoord2f(1.0f, 0.0f);
+        else
+            glTexCoord2f(0.0f, 0.0f);
+        glVertex3fv(&v[faces[i][0]][0]);
+        if (i == 1)
+            glTexCoord2f(0.0f, 0.0f);
+        else
+            glTexCoord2f(1.0f, 0.0f);
+        glVertex3fv(&v[faces[i][1]][0]);
+        if (i == 1)
+            glTexCoord2f(0.0f, 1.0f);
+        else
+            glTexCoord2f(1.0f, 1.0f);
+        glVertex3fv(&v[faces[i][2]][0]);
+        if (i == 1)
+            glTexCoord2f(1.0f, 1.0f);
+        else
+            glTexCoord2f(0.0f, 1.0f);
+        glVertex3fv(&v[faces[i][3]][0]);
+        glEnd();
+        if (tex[i] >= 0)
+        {
+            glBindTexture(GL_TEXTURE_2D, 0);
+        }
+    }
+}
 
 void drawCircle(float r, float h, float n)
 {
@@ -92,6 +178,50 @@ void glutSolidCylinder(float radius, float height, int sectors)
     }
 
     glEnd();
+}
+
+void draw_lightfix()
+{
+    //Base da luminaria
+    glColor3f(0, 0, 0);
+    glPushMatrix();
+    glTranslatef(5.32f, 1.05f, -30.0);
+    glScalef(0.3, 0.12, 0.3);
+    glutSolidCube(1.0f);
+    glPopMatrix();
+
+    //Cabo de baixo
+    glColor3f(0, 0, 0);
+    glPushMatrix();
+    glTranslatef(5.32f, 1.25f, -30.0);
+    glScalef(0.05, 0.5, 0.05);
+    glutSolidCube(1.0f);
+    glPopMatrix();
+
+    //Cabo de cima
+    glColor3f(0, 0, 0);
+    glPushMatrix();
+    glTranslatef(5.5f, 1.6f, -30.0);
+    glRotatef(120, 0.0, 0.0, 50.0);
+    glScalef(0.05, 0.5, 0.05);
+    glutSolidCube(1.0f);
+    glPopMatrix();
+
+    //Desenha Tubo da luminaria
+    glColor3f(0, 0, 0);
+    glPushMatrix();
+    glTranslatef(5.75f, 1.75f, -30.0);
+    glScalef(0.14f, 0.3f, 0.14f);
+    glutSolidCylinder(0.74f, 0.5f, 100);
+    glPopMatrix();
+
+    //Luz da luminária
+    glColor3f(255, 255, 255);
+    glPushMatrix();
+    glTranslatef(5.75f, 1.72f, -30.0);
+    glScalef(0.002f, 0.0024f, 0.002f);
+    glutSolidSphere(40, 40, 40);
+    glPopMatrix();
 }
 
 void drawDecorations()
@@ -229,11 +359,69 @@ void drawAeretor()
     glColor3f(0, 0, 0);
     glPushMatrix();
     glTranslatef(1.0f, 4.4625f, -24.0f);
-    glScalef(0.0025f, 0.0015f, 0.025f);
-    glutSolidSphere(40, 40, 40);
-    glPopMatrix();
+    if (flag_ven == 1)
+    {
+        //Adicionando "-" pra girar ele n o sentido horário
+        glRotatef(-(angle_v), 0, 0.9, 0);
+        glTranslatef(0.00, 0.0f, -0.035);
+        glScalef(0.0025f, 0.0015f, 0.025f);
+        glutSolidSphere(40, 40, 40);
+        glPopMatrix();
+        flag_ven = 2;
+        angle_v += 30;
+        glutPostRedisplay();
+    }
+    else if (flag_ven == 2)
+    {
+        //Adicionando "-" pra girar ele n o sentido horário
+        glRotatef(-(angle_v), 0, 0.9, 0);
+        glTranslatef(0.00, 0.0f, -0.035);
+        glScalef(0.0025f, 0.0015f, 0.025f);
+        glutSolidSphere(40, 40, 40);
+        glPopMatrix();
+        flag_ven = 3;
+        angle_v += 30;
+        glutPostRedisplay();
+    }
+    else if (flag_ven == 3)
+    {
+        //Adicionando "-" pra girar ele n o sentido horário
+        glRotatef(-(angle_v), 0, 0.9, 0);
+        glTranslatef(0.00, 0.0f, -0.035);
+        glScalef(0.0025f, 0.0015f, 0.025f);
+        glutSolidSphere(40, 40, 40);
+        glPopMatrix();
+        flag_ven = 4;
+        angle_v += 30;
+        glutPostRedisplay();
+    }
+    else if (flag_ven == 4)
+    {
+        //Adicionando "-" pra girar ele n o sentido horário
+        glRotatef(-(angle_v), 0, 0.9, 0);
+        glTranslatef(0.00, 0.0f, -0.035);
+        glScalef(0.0025f, 0.0015f, 0.025f);
+        glutSolidSphere(40, 40, 40);
+        glPopMatrix();
+        flag_ven = 5;
+        angle_v += 30;
+        glutPostRedisplay();
+    }
+    else if (flag_ven == 5)
+    {
+        //Adicionando "-" pra girar ele n o sentido horário
+        glRotatef(-(angle_v), 0, 0.9, 0);
+        glTranslatef(0.00, 0.0f, -0.035);
+        glScalef(0.0025f, 0.0015f, 0.025f);
+        glutSolidSphere(40, 40, 40);
+        glPopMatrix();
+        flag_ven = 1;
+        angle_v = 0;
+        glutPostRedisplay();
+    }
 
-    //Hélice II
+    //Removendo segunda Hélice pra o ventilador ficar mais lento
+    /*Hélice II
     glColor3f(0, 0, 0);
     glPushMatrix();
     glTranslatef(1.0f, 4.4625f, -24.0f);
@@ -241,7 +429,7 @@ void drawAeretor()
     glTranslatef(0.00, 0.0f, -0.035);
     glScalef(0.0025f, 0.0015f, 0.025f);
     glutSolidSphere(40, 40, 40);
-    glPopMatrix();
+    glPopMatrix();*/
 }
 
 void drawPictr()
@@ -289,12 +477,15 @@ void drawPictr()
 
 void drawWritingBoard()
 {
+    //Textura da Comoda
+    int wboard_texture[] = { 10, 10, 10, 10, 10, 10 };
+
     //Parte principal do quadro
     glColor3f(0, 0.05, 0);
     glPushMatrix();
     glTranslatef(-6.94f, 2.0f, -16.0);
     glScalef(0.25f, 2.0, 4.0);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, wboard_texture);
     glPopMatrix();
 
     //Madeira inferior do quadro
@@ -302,7 +493,7 @@ void drawWritingBoard()
     glPushMatrix();
     glTranslatef(-6.85f, 1.05f, -16.0);
     glScalef(0.5f, 0.25, 4.42);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, wboard_texture);
     glPopMatrix();
 
     //Madeira superior do quadro
@@ -310,7 +501,7 @@ void drawWritingBoard()
     glPushMatrix();
     glTranslatef(-6.94f, 3.05f, -16.0);
     glScalef(0.25f, 0.1, 4.42);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, wboard_texture);
     glPopMatrix();
 
     //Madeira Lateral esquerda
@@ -318,7 +509,7 @@ void drawWritingBoard()
     glPushMatrix();
     glTranslatef(-6.94f, 2.0f, -13.9);
     glScalef(0.25f, 2.0f, 0.22);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, wboard_texture);
     glPopMatrix();
 
     //Madeira Lateral direita
@@ -326,18 +517,21 @@ void drawWritingBoard()
     glPushMatrix();
     glTranslatef(-6.94f, 2.0f, -18.1);
     glScalef(0.25f, 2.0f, 0.22);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, wboard_texture);
     glPopMatrix();
 }
 
 void drawComfortable()
 {
+    //Textura da Comoda
+    int conf_texture[] = { 4, 4, 4, 4, 4, 4 };
+    
     //Base da comoda
     glColor3f(0.556863, 0.137255, 0.419608);
     glPushMatrix();
     glTranslatef(-5.5f, 0.2f, -25.5);
     glScalef(1.4, 0.05, 2.5);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, conf_texture);
     glPopMatrix();
 
     //Tábua intermediária(entre as gavetas)
@@ -345,7 +539,7 @@ void drawComfortable()
     glPushMatrix();
     glTranslatef(-5.5f, 1.4f, -25.0);
     glScalef(1.4, 0.05, 1.4);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, conf_texture);
     glPopMatrix();
 
     //Tábua intermediária 2(entre as gavetas)
@@ -353,7 +547,7 @@ void drawComfortable()
     glPushMatrix();
     glTranslatef(-5.5f, 1.0f, -25.0);
     glScalef(1.4, 0.05, 1.4);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, conf_texture);
     glPopMatrix();
 
     //Tábua intermediária 3(entre as gavetas)
@@ -361,7 +555,7 @@ void drawComfortable()
     glPushMatrix();
     glTranslatef(-5.5f, 0.6f, -25.0);
     glScalef(1.4, 0.05, 1.4);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, conf_texture);
     glPopMatrix();
 
     //Tábua de cima(última tábua)
@@ -369,7 +563,7 @@ void drawComfortable()
     glPushMatrix();
     glTranslatef(-5.5f, 1.8f, -25.5);
     glScalef(1.4, 0.05, 2.5);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, conf_texture);
     glPopMatrix();
 
     //Tábua lateral direita
@@ -377,7 +571,7 @@ void drawComfortable()
     glPushMatrix();
     glTranslatef(-5.5f, 1.0f, -26.69);
     glScalef(1.4, 1.6, 0.05);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, conf_texture);
     glPopMatrix();
 
     //Tábua lateral esquerda
@@ -385,7 +579,7 @@ void drawComfortable()
     glPushMatrix();
     glTranslatef(-5.5f, 1.0f, -24.3);
     glScalef(1.4, 1.6, 0.05);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, conf_texture);
     glPopMatrix();
 
     //Tábua lateral interna
@@ -393,7 +587,7 @@ void drawComfortable()
     glPushMatrix();
     glTranslatef(-5.5f, 1.0f, -25.69);
     glScalef(1.4, 1.54, 0.05);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, conf_texture);
     glPopMatrix();
 
     //Fundo da comoda
@@ -401,7 +595,7 @@ void drawComfortable()
     glPushMatrix();
     glTranslatef(-6.175f, 1.0f, -25.5);
     glScalef(0.05, 1.6, 2.5);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, conf_texture);
     glPopMatrix();
 
     //Gaveta I
@@ -409,7 +603,7 @@ void drawComfortable()
     glPushMatrix();
     glTranslatef(-5.5f, 1.6f, -25.0);
     glScalef(1.4, 0.33f, 1.4);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, conf_texture);
     glPopMatrix();
 
     //Gaveta II
@@ -417,7 +611,7 @@ void drawComfortable()
     glPushMatrix();
     glTranslatef(-5.5f, 1.2f, -25.0);
     glScalef(1.4, 0.33f, 1.4);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, conf_texture);
     glPopMatrix();
 
     //Gaveta III
@@ -425,7 +619,7 @@ void drawComfortable()
     glPushMatrix();
     glTranslatef(-5.5f, 0.8f, -25.0);
     glScalef(1.4, 0.33f, 1.4);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, conf_texture);
     glPopMatrix();
 
     //Gaveta IV
@@ -433,7 +627,7 @@ void drawComfortable()
     glPushMatrix();
     glTranslatef(-5.5f, 0.4f, -25.0);
     glScalef(1.4, 0.33f, 1.4);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, conf_texture);
     glPopMatrix();
 
     //Porta lateral
@@ -441,7 +635,7 @@ void drawComfortable()
     glPushMatrix();
     glTranslatef(-4.84f, 1.0f, -26.19f);
     glScalef(0.1f, 1.5f, 0.9159f);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, conf_texture);
     glPopMatrix();
 
     //Puxador da primeira gaveta
@@ -481,7 +675,7 @@ void drawComfortable()
     glPushMatrix();
     glTranslatef(-4.78, 1.0f, -25.85f);
     glScalef(0.05f, 0.45f, 0.1f);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, conf_texture);
     glPopMatrix();
 
     //Pé da Comoda frontal direito
@@ -489,7 +683,7 @@ void drawComfortable()
     glPushMatrix();
     glTranslatef(-4.88, 0.1f, -26.65f);
     glScalef(0.1f, 0.25f, 0.1f);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, conf_texture);
     glPopMatrix();
 
     //Pé da Comoda de trás direito
@@ -497,7 +691,7 @@ void drawComfortable()
     glPushMatrix();
     glTranslatef(-6.05, 0.1f, -26.65f);
     glScalef(0.1f, 0.25f, 0.1f);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, conf_texture);
     glPopMatrix();
 
     //Pé da Comoda frontal esquerdo
@@ -505,7 +699,7 @@ void drawComfortable()
     glPushMatrix();
     glTranslatef(-4.88, 0.1f, -24.35f);
     glScalef(0.1f, 0.25f, 0.1f);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, conf_texture);
     glPopMatrix();
 
     //Pé da Comoda de trás direito
@@ -513,18 +707,21 @@ void drawComfortable()
     glPushMatrix();
     glTranslatef(-6.05, 0.1f, -24.35f);
     glScalef(0.1f, 0.25f, 0.1f);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, conf_texture);
     glPopMatrix();
 }
 
 void drawShelf()
 {
+    //Textura das prateleiras
+    int shelf_texture[] = { 15, 15, 15, 15, 15, 15 };
+
     //Prateleira 1
     glColor3f(0.745, 0.423, 0.188);
     glPushMatrix();
     glTranslatef(0.4f, 3.0f, -31.4);
     glScalef(1.5, 0.2, 0.8);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, shelf_texture);
     glPopMatrix();
 
     //Prateleira 2
@@ -532,7 +729,7 @@ void drawShelf()
     glPushMatrix();
     glTranslatef(-1.0f, 2.4f, -31.4);
     glScalef(1.5, 0.2, 0.8);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, shelf_texture);
     glPopMatrix();
 
     //Prateleira 3
@@ -540,18 +737,21 @@ void drawShelf()
     glPushMatrix();
     glTranslatef(1.5f, 2.2f, -31.4);
     glScalef(1.5, 0.2, 0.8);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, shelf_texture);
     glPopMatrix();
 }
 
 void drawBeed()
 {
+    //Textura da cama
+    int bed_texture[] = { 4, 4, 4, 4, 4, 4 };
+
     //Colchao
     glColor3f(255, 255, 255);
     glPushMatrix();
     glTranslatef(4.0f, 0.6f, -11.5);
     glScalef(4.0, 0.4, 2.0);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, bed_texture);
     glPopMatrix();
 
     //Mastro
@@ -559,7 +759,7 @@ void drawBeed()
     glPushMatrix();
     glTranslatef(6.0f, 0.99f, -11.5075);
     glScalef(0.2, 0.6, 2.0);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, bed_texture);
     glPopMatrix();
 
     //Perna cabeceira direita
@@ -567,7 +767,7 @@ void drawBeed()
     glPushMatrix();
     glTranslatef(6.03f, 0.3f, -10.5715);
     glScalef(0.15, 0.785, 0.15);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, bed_texture);
     glPopMatrix();
 
     //Perna cabeceira esquerda
@@ -575,7 +775,7 @@ void drawBeed()
     glPushMatrix();
     glTranslatef(6.0f, 0.3f, -12.434);
     glScalef(0.15, 0.785, 0.15);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, bed_texture);
     glPopMatrix();
 
     //Perna de baixo direita
@@ -583,7 +783,7 @@ void drawBeed()
     glPushMatrix();
     glTranslatef(2.1f, 0.3f, -10.576);
     glScalef(0.15, 0.6, 0.15);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, bed_texture);
     glPopMatrix();
 
     //Perna de baixo esquerda
@@ -591,12 +791,15 @@ void drawBeed()
     glPushMatrix();
     glTranslatef(2.1f, 0.3f, -12.420);
     glScalef(0.15, 0.6, 0.15);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, bed_texture);
     glPopMatrix();
 }
 
 void drawDesk(float x, float y, float z)
 {
+    //Textura da mesa
+    int office_desk_texture[] = { 9, 9, 9, 9, 9, 9 };
+
     //Cor da mesa
     glColor3f(0.11f, 0.09f, 0.043f);
 
@@ -604,76 +807,79 @@ void drawDesk(float x, float y, float z)
     glPushMatrix();
     glTranslatef(x - 0.20, 0.4f + y, z);
     glScalef(0.04, 1.0f, 1.5);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, office_desk_texture);
     glPopMatrix();
 
     //Lateral direita
     glPushMatrix();
     glTranslatef(x + 1.7, 0.4f + y, z);
     glScalef(0.04, 1.0f, 1.5);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, office_desk_texture);
     glPopMatrix();
 
     //Parte superior da mesa
     glPushMatrix();
     glTranslatef(x + 0.76, 0.9f + y, z - 0.0);
     glScalef(2.0, 0.08, 1.54);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, office_desk_texture);
     glPopMatrix();
 
     //Parte de trás da mesa
     glPushMatrix();
     glTranslatef(x + 0.74f, 0.64f, z - 0.2);
     glScalef(1.9, 0.80f, 0.04);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, office_desk_texture);
     glPopMatrix();
 }
 
 void drawChair(float x, float z)
 {
+    //Textura da cadeira
+    int chair_texture[] = { 2, 2, 2, 2, 2, 2 };
+
     //Cor da cadeira
-    glColor3f(0.745, 0.423, 0.188);
+    glColor3f(0.0f, 0.0f, 0.0f);
 
     //suporte esquerdo do apoio traseiro
     glPushMatrix();
     glTranslatef(x + 0.675, 0.5f, z + 0.45);
     glScalef(0.1, 1.20f, 0.1);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, chair_texture);
     glPopMatrix();
 
     //segundo suporte esquerdo do apoio traseiro
     glPushMatrix();
     glTranslatef(x + 0.675, 0.25f, z - 0.225);
     glScalef(0.1, 0.75f, 0.1);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, chair_texture);
     glPopMatrix();
 
     //assento 
     glPushMatrix();
     glTranslatef(x + 1, 0.6f, z + 0.1);
     glScalef(0.75, 0.1, 0.75);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, chair_texture);
     glPopMatrix();
 
     //suporte direito do apoio traseiro
     glPushMatrix();
     glTranslatef(x + 1.325, 0.5f, z + 0.45);
     glScalef(0.1, 1.20f, 0.1);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, chair_texture);
     glPopMatrix();
 
     //segundo suporte direito do apoio traseiro
     glPushMatrix();
     glTranslatef(x + 1.325, 0.25f, z - 0.225);
     glScalef(0.1, 0.75f, 0.1);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, chair_texture);
     glPopMatrix();
 
     //suporte das costas
     glPushMatrix();
     glTranslatef(x + 1.0f, 1.125f, z + 0.45);
     glScalef(0.75, 0.75f, 0.1);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, chair_texture);
     glPopMatrix();
 }
 
@@ -939,12 +1145,15 @@ void drawDoor()
 
 void drawRoom()
 {
+    //Textura das paredes
+    int p_texture[] = { 1, 1, 1, 1, 1, 1 };
+
     //Parede lateral esquerda
     glPushMatrix();
     glColor3f(0.85f, 0.95f, 0.85f);
     glTranslatef(-7.25f, 2.75f, -20.5f);
     glScalef(0.5, 5.5, 23.0);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, p_texture);
     glPopMatrix();
 
     //Parede lateral direita I
@@ -952,7 +1161,7 @@ void drawRoom()
     glColor3f(0.85f, 0.95f, 0.85f);
     glTranslatef(7.25f, 2.75f, -14.75f);
     glScalef(0.5, 5.5, 11.5);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, p_texture);
     glPopMatrix();
 
     //Parede lateral direita II
@@ -960,7 +1169,7 @@ void drawRoom()
     glColor3f(0.85f, 0.95f, 0.85f);
     glTranslatef(7.25f, 2.75f, -28.75f);
     glScalef(0.5, 5.5, 6.5);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, p_texture);
     glPopMatrix();
 
     //Parede lateral direita inferior 
@@ -968,7 +1177,7 @@ void drawRoom()
     glColor3f(0.85f, 0.95f, 0.85f);
     glTranslatef(7.25f, 0.7f, -23.00f);
     glScalef(0.5, 1.4, 5.5);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, p_texture);
     glPopMatrix();
 
     //Parede lateral direita superior
@@ -976,7 +1185,7 @@ void drawRoom()
     glColor3f(0.85f, 0.95f, 0.85f);
     glTranslatef(7.25f, 4.5f, -23.00f);
     glScalef(0.5, 2.5, 5.5);
-    glutSolidCube(1.0f);
+    drawCube(1.0f, p_texture);
     glPopMatrix();
 
     //Parede do fundo do quarto 
@@ -984,7 +1193,7 @@ void drawRoom()
     glColor3f(0.85f, 0.95f, 0.85f);
     glTranslatef(0.0f, 2.75f, -31.75f);
     glScalef(14.5, 5.5, 0.5);
-    glutSolidCube(1.0);
+    drawCube(1.0f, p_texture);
     glPopMatrix();
 
     //Parede da frente esquerda
@@ -992,7 +1201,7 @@ void drawRoom()
     glColor3f(0.85f, 0.95f, 0.85f);
     glTranslatef(-4.5f, 2.75f, -9.25f);
     glScalef(5.4, 5.5, 0.5);
-    glutSolidCube(1.0);
+    drawCube(1.0f, p_texture);
     glPopMatrix();
 
     //Parede da frente direita
@@ -1000,7 +1209,7 @@ void drawRoom()
     glColor3f(0.85f, 0.95f, 0.85f);
     glTranslatef(3.75f, 2.75f, -9.25f);
     glScalef(6.75, 5.5, 0.5);
-    glutSolidCube(1.0);
+    drawCube(1.0f, p_texture);
     glPopMatrix();
 
     //Parede superior da entrada
@@ -1008,7 +1217,7 @@ void drawRoom()
     glColor3f(0.85f, 0.95f, 0.85f);
     glTranslatef(0.0f, 4.55f, -9.25f);
     glScalef(14.5, 2.75, 0.5);
-    glutSolidCube(1.0);
+    drawCube(1.0f, p_texture);
     glPopMatrix();
 
     //Teto do quarto
@@ -1016,7 +1225,7 @@ void drawRoom()
     glColor3f(0.66f, 0.66f, 0.66f);
     glTranslatef(0.0f, 5.75f, -20.5f);
     glScalef(15.0, 0.5, 23.0);
-    glutSolidCube(1.0);
+    drawCube(1.0f, p_texture);
     glPopMatrix();
 }
 
@@ -1024,6 +1233,7 @@ void drawFloor()
 {
     //Piso do quarto
     glPushMatrix();
+    glBindTexture(GL_TEXTURE_2D, texture_id[7]);
     glTranslatef(0.0f, 0.0f, -13.0f);
     glBegin(GL_QUADS);
     glColor3f(0.66f, 0.66f, 0.66f);
@@ -1036,6 +1246,7 @@ void drawFloor()
     glTexCoord2f(1.0f, 1.0f);
     glVertex3f(7.5f, 0.0f, -19.0f);
     glEnd();
+    glBindTexture(GL_TEXTURE_2D, 0);
     glPopMatrix();
 }
 
@@ -1062,11 +1273,22 @@ void display()
     drawWritingBoard();
     drawPictr();
     drawPoleDance();
-    drawAeretor();
     drawDoor();
     drawWindow();
     drawDecorations();
-    
+    draw_lightfix();
+
+    //Desenha o quadro do Van Gogh
+    glPushMatrix();
+    glEnable(GL_TEXTURE_2D);
+    glTranslatef(-4.75f, 2.75f, -31.4);
+    aply_texture(0);
+    glScalef(1.25, 1.125, 0.125);
+    do_texture();
+    glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+
+    drawAeretor();
 
     glFlush();
     glutSwapBuffers();
@@ -1153,26 +1375,6 @@ void processSpecialKeys(int key, int xx, int yy)
     }
 }
 
-
-void init()
-{
-    glClearColor(0.7, 1.0, 1.0, 0.0);
-
-    glEnable(GL_LIGHT0);
-
-    glEnable(GL_COLOR_MATERIAL);
-
-    glShadeModel(GL_SMOOTH);
-    glEnable(GL_DEPTH_TEST);
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0, WIDTH, 0, HEIGHT, -1, 1);
-}
-
 void reshape(GLsizei width, GLsizei height)
 {
     // Prevent a divide by zero, when window is too short
@@ -1201,8 +1403,66 @@ void reshape(GLsizei width, GLsizei height)
 
 }
 
+void setup_lighting()
+{
+    //Iluminacao
+    glEnable(GL_LIGHTING); // Habilita a iluminacao
+    glEnable(GL_LIGHT0); // Habilita a luz 0
+    glEnable(GL_DEPTH_TEST); // Habilita o teste de profundidade
+    glEnable(GL_COLOR_MATERIAL);// Habilita cor dos materiais
+
+
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+
+    
+    float mat_ambient[] = {0.2f , 0.2f ,0.2f , 1.0f};
+    float mat_diffuse[] = {1.0f , 0.0f, 0.0f , 1.0f}; // Cor azul
+    float mat_specular[] = {1.0f, 1.0f, 1.0f, 1.0f}; // Destaquesbrancos
+    float mat_shininess[] = {50.0f}; // O quao polida eh a superficie
+
+    float spot_direction[] = {0.0f, -1.0f, 0.0f};
+    float spot_cutoff[] = {90.0f};
+
+    glLightfv(GL_MAX_LIGHTS-1, GL_SPOT_DIRECTION, spot_direction);
+    glLightfv(GL_MAX_LIGHTS-1, GL_SPOT_CUTOFF, spot_cutoff);
+
+     //O primeiro parametro diz qual lado da face ( GL_FRONT ,GL_BACK etc )
+     glLightfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+     glLightfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+     glLightfv(GL_FRONT, GL_SPECULAR, mat_specular);
+     glLightfv(GL_FRONT, GL_SHININESS, mat_shininess);
+
+     // Luz spot
+     glLightfv(GL_LIGHT4, GL_POSITION, posLuzSpot);
+     glLightfv(GL_LIGHT4, GL_DIFFUSE, luzDifusaSpot);
+     glLightfv(GL_LIGHT4, GL_SPECULAR, luzEspecSpot);
+     glLightfv(GL_LIGHT4, GL_SPOT_DIRECTION, dirLuzSpot);
+     glLightf(GL_LIGHT4, GL_SPOT_CUTOFF, 90);
+     glLightf(GL_LIGHT4, GL_SPOT_EXPONENT, 10);
+}
+
+
+void init()
+{
+    //glClearColor(0.7, 1.0, 1.0, 0.0);
+    glClearColor(0.0, 0.0, 0.0, 0.0);
+    
+    glShadeModel(GL_SMOOTH);
+    glEnable(GL_DEPTH_TEST);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, WIDTH, 0, HEIGHT, -1, 1);
+}
+
 int main(int argc, char** argv)
 {
+    
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
     glutInitWindowSize(WIDTH, HEIGHT);
@@ -1214,9 +1474,19 @@ int main(int argc, char** argv)
         exit(-1);
     }
 
+    setup_lighting();
+    init_obj_vecs();
+    init_textures_vec();
+
     init();
 
     glutKeyboardFunc(keyboard);
+    //setup_lighting();
+
+   load_texture("vangogh.jpg", 0);
+   //load_texture("ceramica.jpg", 1);
+
+
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
     glutIdleFunc(display);
