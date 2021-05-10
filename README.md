@@ -21,7 +21,7 @@
 <br />
 <h2> Linux </h2>
 <br />
-    No Linux, após instalar todas as dependências basta executar normalmente com os comandos de compilação para programas com o OpenGL
+    No Linux, após instalar todas as dependências basta executar normalmente com os comandos de compilação para programas com o OpenGL. Vale lembrar que para rodar no Linux(ou até mesmo no Windows sem o uso do VSCODE) basta baixar os arquivos dipostos na pasta "DavidsRoom"
     <br />
 <h2> Windows </h2>
 <br />
