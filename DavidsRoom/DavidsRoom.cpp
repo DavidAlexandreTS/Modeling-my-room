@@ -18,18 +18,6 @@ GLint HEIGHT = 700;
 
 GLint modo = GL_MODULATE;
 
-// Luz spot da luminaria
-GLfloat luzAmbSpot[4]= {0.2,0.2,0.2,1.0};
-GLfloat posLuzSpot[4] = {  260,120,65, 1 };
-GLfloat dirLuzSpot[3] = { 0, -1,0 };
-GLfloat luzDifusaSpot[4] = { 1,1,1,1 };
-GLfloat luzEspecSpot[4] = { 0,0,0,1 };
-
-//Configuracoes de iluminacao
-float light_ambient[] = { 0.75f, 0.75f, 0.75f }; //Luz ambiente
-float light_diffuse[] = { 0.0f , 0.0f , 0.5f }; //Luz azulzinha
-float light_specular[] = { 1.0f, 0.0f, 0.0f }; // Luz branca
-
 // actual vector representing the camera's direction
 float lx = 0.0f, lz = -1.0f;
 
@@ -1405,42 +1393,47 @@ void reshape(GLsizei width, GLsizei height)
 
 void setup_lighting()
 {
-    //Iluminacao
+    //Iniciando Iluminacao
     glEnable(GL_LIGHTING); // Habilita a iluminacao
     glEnable(GL_LIGHT0); // Habilita a luz 0
     glEnable(GL_DEPTH_TEST); // Habilita o teste de profundidade
     glEnable(GL_COLOR_MATERIAL);// Habilita cor dos materiais
 
+    //Configuracoes de iluminacao
+    float light_ambient[] = { 0.75f, 0.75f, 0.75f }; //Luz ambiente
+    float light_diffuse[] = { 0.0f , 0.0f , 0.5f }; //Luz azulzinha
+    float light_specular[] = { 1.0f, 0.0f, 0.0f }; // Luz branca
 
     glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
     glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
 
-    
-    float mat_ambient[] = {0.2f , 0.2f ,0.2f , 1.0f};
-    float mat_diffuse[] = {1.0f , 0.0f, 0.0f , 1.0f}; // Cor azul
-    float mat_specular[] = {1.0f, 1.0f, 1.0f, 1.0f}; // Destaquesbrancos
-    float mat_shininess[] = {50.0f}; // O quao polida eh a superficie
+    //Deninicao de material utilizado
+    float mat_ambient[] = { 0.2f , 0.2f ,0.2f , 1.0f };
+    float mat_diffuse[] = { 1.0f , 0.0f, 0.0f , 1.0f }; // Cor azul
+    float mat_specular[] = { 1.0f, 1.0f, 1.0f }; // branco
+    float mat_shininess[] = { 50.0f }; // O quao polida eh a superficie
+    float lum_position[] = { 1.0f, 1.4625f, -24.0f, 1.0f };
 
-    float spot_direction[] = {0.0f, -1.0f, 0.0f};
-    float spot_cutoff[] = {90.0f};
+    //Aplicacao de Iluminacao especular e difusa na luminaria do ventilador
+    glLightfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+    glLightfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+    glLightfv(GL_FRONT, GL_SPECULAR, mat_specular);
+    glLightfv(GL_FRONT, GL_SHININESS, mat_shininess);
+    glLightfv(GL_LIGHT1, GL_POSITION, lum_position);
 
-    glLightfv(GL_MAX_LIGHTS-1, GL_SPOT_DIRECTION, spot_direction);
-    glLightfv(GL_MAX_LIGHTS-1, GL_SPOT_CUTOFF, spot_cutoff);
+    //spot
+    float spot_direction[] = { 0.0f , 0.0f , -0.5f };
+    float spot_cutoff[] = { 15.0f };
+    float spot_specular[] = { 0.5f, 0.5f, 0.0f };//luz amarela
+    float spot_position[] = { 5.75f , 1.72f , -30.0, 1.0 };
+    float spot_difuse[] = { 0.5f, 0.5f, 0.0 };
 
-     //O primeiro parametro diz qual lado da face ( GL_FRONT ,GL_BACK etc )
-     glLightfv(GL_FRONT, GL_AMBIENT, mat_ambient);
-     glLightfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-     glLightfv(GL_FRONT, GL_SPECULAR, mat_specular);
-     glLightfv(GL_FRONT, GL_SHININESS, mat_shininess);
-
-     // Luz spot
-     glLightfv(GL_LIGHT4, GL_POSITION, posLuzSpot);
-     glLightfv(GL_LIGHT4, GL_DIFFUSE, luzDifusaSpot);
-     glLightfv(GL_LIGHT4, GL_SPECULAR, luzEspecSpot);
-     glLightfv(GL_LIGHT4, GL_SPOT_DIRECTION, dirLuzSpot);
-     glLightf(GL_LIGHT4, GL_SPOT_CUTOFF, 90);
-     glLightf(GL_LIGHT4, GL_SPOT_EXPONENT, 10);
+    glMaterialfv(GL_LIGHT0, GL_SPECULAR, spot_specular);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, spot_difuse);
+    glLightfv(GL_LIGHT0, GL_POSITION, spot_position);
+    glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, spot_direction);
+    glLightfv(GL_LIGHT0, GL_SPOT_CUTOFF, spot_cutoff);
 }
 
 
@@ -1462,7 +1455,6 @@ void init()
 
 int main(int argc, char** argv)
 {
-    
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
     glutInitWindowSize(WIDTH, HEIGHT);
@@ -1483,8 +1475,9 @@ int main(int argc, char** argv)
     glutKeyboardFunc(keyboard);
     //setup_lighting();
 
-   load_texture("vangogh.jpg", 0);
-   //load_texture("ceramica.jpg", 1);
+
+    load_texture("vangogh.jpg", 0);
+    //load_texture("ceramica.jpg", 1);
 
 
     glutDisplayFunc(display);
