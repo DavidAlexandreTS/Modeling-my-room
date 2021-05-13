@@ -25,4 +25,18 @@
     <br />
 <h2> Windows </h2>
 <br />
-    No Windows existem várias formas, a utilizada por mim foi através do Visual Studio, existe uma série de tutoriais na internet que podem ser úteis para fazer a instalação das dependências e rodar na sua máquina
+    No Windows existem várias formas, a utilizada por mim foi através do Visual Studio, existe uma série de tutoriais na internet que podem ser úteis para fazer a instalação das dependências e rodar na sua máquina. Colocarei o link utilizado por mim para configurar tudo na referências.
+<h1> Referências: </h1>
+<br />
+https://www.ft.unicamp.br/~magic/opengl/index2006.html
+<br />
+https://www.inf.pucrs.br/~manssour/OpenGL/Utilizacao.html
+<br />
+http://professores.dcc.ufla.br/~bruno/aulas/cg/
+<br />
+https://edisciplinas.usp.br/pluginfile.php/4260505/mod_resource/content/1/introducao-opengl.pdf
+<br />
+http://www.aerstudio.com.br/blog/programacao/configurar-openglglut-no-visual-studio/
+<br />
+https://github.com/valeriojr/monitoria-cg
+
