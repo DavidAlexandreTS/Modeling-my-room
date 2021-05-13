@@ -1,7 +1,7 @@
 # Projeto da Disciplina de Computação Gráfica 2020.1
 <h1> Informações sobre o projeto </h1>
 <br />
-    Estão implementados os requisitos solicitados na Ab1 e na Ab2, que incluem modelagem de objetos obrigatórios, abertura de janela e porta usando teclado e etc.
+    Estão implementados os requisitos solicitados na Ab1 e na Ab2(com exceção da iluminação spot de forma correta), que incluem modelagem de objetos obrigatórios, abertura de janela e porta usando teclado e etc.
     <br />
     Sobre as Funcionalidades utilizando o teclado:
     <br />
