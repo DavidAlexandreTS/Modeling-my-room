@@ -1,32 +1,37 @@
-# Projeto da Disciplina de Computação Gráfica 2020.1
-<h1> Informações sobre o projeto </h1>
+# Computer Graphics Course Project – 2020.1
+
+<h1> Project Information </h1>
 <br />
-    Estão implementados os requisitos solicitados na Ab1 e na Ab2(com exceção da iluminação spot de forma correta), que incluem modelagem de objetos obrigatórios, abertura de janela e porta usando teclado e etc.
-    <br />
-    Sobre as Funcionalidades utilizando o teclado:
-    <br />
-    A popular seta para cima movimenta o observador para frente, enquanto a seta para baixo o movimenta para trás
-    <br />
-    A seta esquerda o faz virar para a posição esquerda, analogamente a tecla direita vira o observador para a direita
-    <br />
-    As teclas pageDown e pageUp servem para subir e descer respectivamente
-    <br />
-    Ao ser pressionada a tecla “o” abre a porta, enquanto a tecla “c” serve para fechá-la
-    <br />
-    De forma similar a tecla “w” abre a janela e a “t” fecha a mesma
-    <br />
-    Obs: Como parte da nota da Ab2 foram adicionadas as iluminações difusa e especular como foi solicitado
+The requirements requested in Assignment 1 and Assignment 2 have been implemented (except for the correct implementation of spot lighting), including modeling of mandatory objects, opening windows and doors using the keyboard, among others.
 <br />
-<h1> Dicas de como rodar </h1>
+About the keyboard functionalities:
+<br />
+The popular Up Arrow key moves the observer forward, while the Down Arrow key moves the observer backward.
+<br />
+The Left Arrow key turns the observer to the left, similarly, the Right Arrow key turns the observer to the right.
+<br />
+The PageDown and PageUp keys are used to move the observer down and up, respectively.
+<br />
+Pressing the "o" key opens the door, while the "c" key closes it.
+<br />
+Similarly, the "w" key opens the window and the "t" key closes it.
+<br />
+Note: As part of the grade for Assignment 2, diffuse and specular lighting were added as requested.
+<br />
+
+<h1> How to Run </h1>
 <br />
 <h2> Linux </h2>
 <br />
-    No Linux, após instalar todas as dependências basta executar normalmente com os comandos de compilação para programas com o OpenGL. Vale lembrar que para rodar no Linux(ou até mesmo no Windows sem o uso do VSCODE) basta baixar os arquivos dipostos na pasta "DavidsRoom"
-    <br />
+On Linux, after installing all dependencies, simply run the compilation commands for OpenGL programs. It is worth mentioning that to run on Linux (or even on Windows without using VSCode), just download the files located in the "DavidsRoom" folder.
+<br />
+
 <h2> Windows </h2>
 <br />
-    No Windows existem várias formas, a utilizada por mim foi através do Visual Studio, existe uma série de tutoriais na internet que podem ser úteis para fazer a instalação das dependências e rodar na sua máquina. Colocarei o link utilizado por mim para configurar tudo na referências.
-<h1> Referências: </h1>
+On Windows, there are several ways to run it; the method I used was through Visual Studio. There are many tutorials online that can help with installing the dependencies and running the project on your machine. I will provide the link I used for setup in the references section.
+<br />
+
+<h1> References: </h1>
 <br />
 https://www.ft.unicamp.br/~magic/opengl/index2006.html
 <br />
@@ -39,4 +44,3 @@ https://edisciplinas.usp.br/pluginfile.php/4260505/mod_resource/content/1/introd
 http://www.aerstudio.com.br/blog/programacao/configurar-openglglut-no-visual-studio/
 <br />
 https://github.com/valeriojr/monitoria-cg
-
